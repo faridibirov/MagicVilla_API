@@ -21,6 +21,6 @@ public class VillaDTO
 
 	public string ImageUrl { get; set; }
 
-	public string Amentiy { get; set; }
+	public string Amenity { get; set; }
 
 }
