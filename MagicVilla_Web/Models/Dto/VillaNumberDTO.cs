@@ -12,4 +12,5 @@ public class VillaNumberDTO
 
 	public string SpecialDetails { get; set; }
 
+	public VillaDTO Villa { get; set; }
 }
