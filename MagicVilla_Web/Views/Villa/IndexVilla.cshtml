@@ -32,7 +32,7 @@
 		@foreach(var item in Model)
 		{
 			<tr>
-				<td>@item</td>
+				<td>@item.Name</td>
 				<td>@item.Occupancy</td>
 				<td>@((item.Rate).ToString("C", new System.Globalization.CultureInfo("en-US")))</td>
 				<td>
