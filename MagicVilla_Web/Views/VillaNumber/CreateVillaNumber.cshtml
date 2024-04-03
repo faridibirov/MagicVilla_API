@@ -1,5 +1,5 @@
 ﻿@using MagicVilla_Web.Models.ViewModels
-@model VillaNumberVM
+@model VillaNumberCreateVM
 
 <form asp-action="CreateVillaNumber">
 	<br />
@@ -18,10 +18,14 @@
 				<span asp-validation-for="VillaNumberCreateDTO.VillaNo" class="text-danger"></span>
 			</div>
 
-			<div class="form-floating mb-3 col-md-6">
+			<div class="col-2">
+				<label asp-for="VillaNumberCreateDTO.VillaID" class="control-label pt-2" style="font-size:20px;"></label>
+			</div>
+			<div class="col-10 pb-3">
 				<select asp-for="VillaNumberCreateDTO.VillaID" asp-items="@Model.VillaList" class="form-select">
-					<option disabled selected>SelectVilla-</option>
+					<option disabled selected>-SelectVilla-</option>
 				</select>
+				<span asp-validation-for="VillaNumberCreateDTO.VillaID" class="text-danger"></span>
 			</div>
 
 			<div class="col-2">
