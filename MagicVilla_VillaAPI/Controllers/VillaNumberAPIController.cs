@@ -96,7 +96,7 @@ public class VillaNumberAPIController : ControllerBase
 
 			if (await _dbVillaNumber.GetAsync(u => u.VillaNo == createDTO.VillaNo) != null)
 			{
-				ModelState.AddModelError("CustomError", "Villa Number already exist!");
+				ModelState.AddModelError("ErrorMessages", "Villa Number already exist!");
 
 				return BadRequest(ModelState);
 			}
@@ -104,7 +104,7 @@ public class VillaNumberAPIController : ControllerBase
 			if (await _dbVilla.GetAsync(u => u.Id == createDTO.VillaID)==null)
 			{
 
-				ModelState.AddModelError("CustomError", "Villa ID is invalid!");
+				ModelState.AddModelError("ErrorMessages", "Villa ID is invalid!");
 
 				return BadRequest(ModelState);
 			}
@@ -188,7 +188,7 @@ public class VillaNumberAPIController : ControllerBase
 			if (await _dbVilla.GetAsync(u => u.Id == updateDTO.VillaID) == null)
 			{
 
-				ModelState.AddModelError("CustomError", "Villa ID is invalid!");
+				ModelState.AddModelError("ErrorMessages", "Villa ID is invalid!");
 
 				return BadRequest(ModelState);
 			}
