@@ -3,6 +3,7 @@ using MagicVilla_VillaAPI.Data;
 using MagicVilla_VillaAPI.Models;
 using MagicVilla_VillaAPI.Models.Dto;
 using MagicVilla_VillaAPI.Repository.IRepository;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -26,6 +27,7 @@ public class VillaAPIController : ControllerBase
 	}
 
 	[HttpGet]
+	[Authorize]
 	[ProducesResponseType(StatusCodes.Status200OK)]
 	public async Task<ActionResult<APIResponse>> GetVillas()
 	{
@@ -48,7 +50,8 @@ public class VillaAPIController : ControllerBase
 	}
 
 	[HttpGet("{id:int}", Name = "GetVilla")]
-	[ProducesResponseType(StatusCodes.Status200OK)]
+    [Authorize(Roles = "admin")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
 	public async Task<ActionResult<APIResponse>> GetVilla(int id)
@@ -86,7 +89,7 @@ public class VillaAPIController : ControllerBase
 	}
 
 	[HttpPost]
-	[ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status201Created)]
 	[ProducesResponseType(StatusCodes.Status500InternalServerError)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
 	public async Task<ActionResult<APIResponse>> CreateVilla([FromBody] VillaCreateDTO createDTO)
@@ -146,7 +149,8 @@ public class VillaAPIController : ControllerBase
 	}
 
 	[HttpDelete("{id:int}", Name = "DeleteVilla")]
-	[ProducesResponseType(StatusCodes.Status204NoContent)]
+    [Authorize(Roles = "CUSTOM")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
 	public async Task<ActionResult<APIResponse>> DeleteVilla(int id)
