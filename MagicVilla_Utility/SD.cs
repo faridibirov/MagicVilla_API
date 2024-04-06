@@ -10,4 +10,6 @@ public  static class SD
 		DELETE
 	}
 
+	public static string SessionToken = "JWTToken"; 
+
 }
