@@ -29,7 +29,9 @@ public class VillaAPIController : ControllerBase
 	[HttpGet]
 	[Authorize]
 	[ProducesResponseType(StatusCodes.Status200OK)]
-	public async Task<ActionResult<APIResponse>> GetVillas()
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult<APIResponse>> GetVillas()
 	{
 		try
 		{
@@ -53,6 +55,8 @@ public class VillaAPIController : ControllerBase
     [Authorize(Roles = "admin")]
     [ProducesResponseType(StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
+	[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+	[ProducesResponseType(StatusCodes.Status403Forbidden)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
 	public async Task<ActionResult<APIResponse>> GetVilla(int id)
 	{
@@ -151,7 +155,9 @@ public class VillaAPIController : ControllerBase
 	[HttpDelete("{id:int}", Name = "DeleteVilla")]
     [Authorize(Roles = "CUSTOM")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-	[ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
 	public async Task<ActionResult<APIResponse>> DeleteVilla(int id)
 	{
