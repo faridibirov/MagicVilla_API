@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿
+using AutoMapper;
 using MagicVilla_VillaAPI.Models;
 using MagicVilla_VillaAPI.Models.Dto;
 using MagicVilla_VillaAPI.Repository.IRepository;
@@ -11,6 +12,7 @@ namespace MagicVilla_VillaAPI.Controllers;
 
 [Route("api/VillaNumberAPI")]
 [ApiController]
+[ApiVersion("1.0")]
 public class VillaNumberAPIController : ControllerBase
 {
 	protected APIResponse _response;
