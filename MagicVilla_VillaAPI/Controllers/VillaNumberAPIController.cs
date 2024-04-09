@@ -10,9 +10,10 @@ using System.Net;
 
 namespace MagicVilla_VillaAPI.Controllers;
 
-[Route("api/VillaNumberAPI")]
+[Route("api/v{version:ApiVersion}/VillaNumberAPI")]
 [ApiController]
 [ApiVersion("1.0")]
+[ApiVersion("2.0")]
 public class VillaNumberAPIController : ControllerBase
 {
 	protected APIResponse _response;
@@ -29,13 +30,14 @@ public class VillaNumberAPIController : ControllerBase
 	}
 
 	[HttpGet]
+	[MapToApiVersion("1.0")]
 	[ProducesResponseType(StatusCodes.Status200OK)]
 	public async Task<ActionResult<APIResponse>> GetVillaNumbers()
 	{
 		try
 		{
 
-			IEnumerable<VillaNumber> villaNumberList = await _dbVillaNumber.GetAllAsync(includeProperties:"Villa");
+			IEnumerable<VillaNumber> villaNumberList = await _dbVillaNumber.GetAllAsync(includeProperties: "Villa");
 			_response.Result = _mapper.Map<List<VillaNumberDTO>>(villaNumberList);
 			_response.StatusCode = HttpStatusCode.OK;
 			return Ok(_response);
@@ -50,11 +52,18 @@ public class VillaNumberAPIController : ControllerBase
 		return _response;
 	}
 
+	[HttpGet]
+	[MapToApiVersion("2.0")]
+	public IEnumerable<string> Get()
+	{
+		return new string[] { "value1", "value2" };
+	}
+
 	[HttpGet("{villaNo:int}", Name = "GetVillaNumber")]
 	[ProducesResponseType(StatusCodes.Status200OK)]
 	[ProducesResponseType(StatusCodes.Status404NotFound)]
 	[ProducesResponseType(StatusCodes.Status400BadRequest)]
-	public async Task<ActionResult<APIResponse>> GetVillaNumbers(int villaNo)
+	public async Task<ActionResult<APIResponse>> GetVillaNumber(int villaNo)
 	{
 		try
 		{
