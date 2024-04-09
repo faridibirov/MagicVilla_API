@@ -9,7 +9,7 @@ namespace MagicVilla_VillaAPI.Controllers;
 
 [Route("api/v{version:ApiVersion}/UsersAuth")]
 [ApiController]
-[ApiVersion("1.0")]
+[ApiVersionNeutral]
 public class UsersController : Controller
 {
     private readonly IUserRepository _userRepository;
@@ -17,7 +17,7 @@ public class UsersController : Controller
     public UsersController(IUserRepository userRepository)
     {
         _userRepository = userRepository;
-        this._response = new();
+        _response = new();
     }
 
 
@@ -26,7 +26,7 @@ public class UsersController : Controller
     {
         var loginResponse = await _userRepository.Login(model);
 
-        if(loginResponse.User==null || string.IsNullOrEmpty(loginResponse.Token))
+        if (loginResponse.User == null || string.IsNullOrEmpty(loginResponse.Token))
         {
             _response.StatusCode = HttpStatusCode.BadRequest;
             _response.IsSuccess = false;
@@ -46,7 +46,7 @@ public class UsersController : Controller
     {
         bool isUserNameUnique = _userRepository.IsUniqueUser(model.UserName);
 
-        if(!isUserNameUnique)
+        if (!isUserNameUnique)
         {
             _response.StatusCode = HttpStatusCode.BadRequest;
             _response.IsSuccess = false;
@@ -55,9 +55,9 @@ public class UsersController : Controller
         }
 
 
-        var user =  await _userRepository.Register(model);
+        var user = await _userRepository.Register(model);
 
-        if(user==null)
+        if (user == null)
         {
             _response.StatusCode = HttpStatusCode.BadRequest;
             _response.IsSuccess = false;

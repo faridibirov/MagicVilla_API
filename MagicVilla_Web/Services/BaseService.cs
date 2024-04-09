@@ -2,6 +2,7 @@
 using MagicVilla_Web.Models;
 using MagicVilla_Web.Services.IServices;
 using Newtonsoft.Json;
+using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
 
@@ -66,9 +67,9 @@ public class BaseService : IBaseService
             {
                 APIResponse ApiResponse = JsonConvert.DeserializeObject<APIResponse>(apiContent);
 
-                if(apiResponse.StatusCode==System.Net.HttpStatusCode.BadRequest || apiResponse.StatusCode == System.Net.HttpStatusCode.NotFound)
+                if(ApiResponse!=null &&(apiResponse.StatusCode==HttpStatusCode.BadRequest || apiResponse.StatusCode == HttpStatusCode.NotFound))
                 {
-					ApiResponse.StatusCode = System.Net.HttpStatusCode.BadRequest;
+					ApiResponse.StatusCode = HttpStatusCode.BadRequest;
 					ApiResponse.IsSuccess = false;
 
 					var res = JsonConvert.SerializeObject(ApiResponse);
