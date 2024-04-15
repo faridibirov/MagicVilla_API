@@ -9,5 +9,5 @@ public interface IUserRepository
 
     Task<LoginResponseDTO> Login(LoginRequestDTO loginRequestDTO);
 
-    Task<LocalUser> Register(RegisterationRequestDTO registerationRequestDTO);
+    Task<UserDTO> Register(RegisterationRequestDTO registerationRequestDTO);
 }
