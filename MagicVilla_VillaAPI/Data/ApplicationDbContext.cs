@@ -35,7 +35,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 				Rate = 200,
 				Sqft = 550,
 				Amenity = "",
-				CreatedDate = DateTime.Now
+				CreatedDate = new DateTime(2024, 04, 15)
 			},
 			  new Villa
 			  {
@@ -47,8 +47,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 				  Rate = 300,
 				  Sqft = 550,
 				  Amenity = "",
-				  CreatedDate = DateTime.Now
-			  },
+				  CreatedDate = new DateTime(2024, 04, 15)
+              },
 			  new Villa
 			  {
 				  Id = 3,
@@ -59,8 +59,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 				  Rate = 400,
 				  Sqft = 750,
 				  Amenity = "",
-				  CreatedDate = DateTime.Now
-			  },
+				  CreatedDate = new DateTime(2024, 04, 15)
+              },
 			  new Villa
 			  {
 				  Id = 4,
@@ -71,8 +71,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 				  Rate = 550,
 				  Sqft = 900,
 				  Amenity = "",
-				  CreatedDate = DateTime.Now
-			  },
+				  CreatedDate = new DateTime(2024, 04, 15)
+              },
 			  new Villa
 			  {
 				  Id = 5,
@@ -83,8 +83,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 				  Rate = 600,
 				  Sqft = 1100,
 				  Amenity = "",
-				  CreatedDate = DateTime.Now
-			  }
+				  CreatedDate = new DateTime(2024, 04, 15)
+              }
 			);
 	}
 

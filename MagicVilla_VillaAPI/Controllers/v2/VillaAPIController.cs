@@ -10,11 +10,11 @@ using Microsoft.EntityFrameworkCore;
 using System.Net;
 using System.Text.Json;
 
-namespace MagicVilla_VillaAPI.Controllers.v1;
+namespace MagicVilla_VillaAPI.Controllers.v2;
 
 [Route("api/v{version:ApiVersion}/VillaAPI")]
 [ApiController]
-[ApiVersion("1.0")]
+[ApiVersion("2.0")]
 public class VillaAPIController : ControllerBase
 {
     protected APIResponse _response;
@@ -29,7 +29,7 @@ public class VillaAPIController : ControllerBase
     }
 
     [HttpGet]
-    [ResponseCache(CacheProfileName="Default30")]
+    [ResponseCache(CacheProfileName = "Default30")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -43,19 +43,19 @@ public class VillaAPIController : ControllerBase
 
             if (occupancy > 0)
             {
-                villaList = await _dbVilla.GetAllAsync(u => u.Occupancy == occupancy, pageSize:pageSize,
-                    pageNumber:pageNumber);
+                villaList = await _dbVilla.GetAllAsync(u => u.Occupancy == occupancy, pageSize: pageSize,
+                    pageNumber: pageNumber);
             }
 
             else
             {
                 villaList = await _dbVilla.GetAllAsync(pageSize: pageSize,
-					pageNumber: pageNumber);
-			}
+                    pageNumber: pageNumber);
+            }
 
-            if(!string.IsNullOrEmpty(search))
+            if (!string.IsNullOrEmpty(search))
             {
-                villaList = villaList.Where(u=>u.Name.ToLower().Contains(search));  
+                villaList = villaList.Where(u => u.Name.ToLower().Contains(search));
             }
 
             Pagination pagination = new() { PageNumber = pageNumber, PageSize = pageSize };
