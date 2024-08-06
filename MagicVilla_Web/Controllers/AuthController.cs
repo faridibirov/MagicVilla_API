@@ -5,6 +5,7 @@ using MagicVilla_Web.Services.IServices;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Newtonsoft.Json;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -62,6 +63,14 @@ public class AuthController : Controller
     [HttpGet]
     public IActionResult Register()
     {
+        var roleList = new List<SelectListItem>()
+        {
+            new SelectListItem {Text = SD.Admin, Value = SD.Admin},
+            new SelectListItem {Text = SD.Customer, Value = SD.Customer},
+        };
+
+        ViewBag.RoleList = roleList;
+
         return View();
     }
 
@@ -69,6 +78,11 @@ public class AuthController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Register(RegisterationRequestDTO obj)
     {
+        if(string.IsNullOrEmpty(obj.Role))
+        {
+            obj.Role = SD.Customer;
+        }
+
         APIResponse result = await _authService.RegisterAsync<APIResponse>(obj);
 
         if(result!=null && result.IsSuccess)
@@ -76,7 +90,22 @@ public class AuthController : Controller
             return RedirectToAction("Login");
         }
 
-        return View();
+		else
+		{
+			ModelState.AddModelError("CustomError", result.ErrorMessages.FirstOrDefault());
+
+			var roleList = new List<SelectListItem>()
+		{
+			new SelectListItem {Text = SD.Admin, Value = SD.Admin},
+			new SelectListItem {Text = SD.Customer, Value = SD.Customer},
+		};
+
+			ViewBag.RoleList = roleList;
+
+			return View();
+		}
+
+
     }
 
 
