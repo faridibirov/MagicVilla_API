@@ -19,6 +19,8 @@ public class VillaCreateDTO
 
 	public string ImageUrl { get; set; }
 
+	public IFormFile? Image { get; set; }
+
 	public string Amenity { get; set; }
 
 }

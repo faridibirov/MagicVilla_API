@@ -26,14 +26,52 @@ public class BaseService : IBaseService
         {
             var client = httpClient.CreateClient("MagicAPI");
             HttpRequestMessage message = new HttpRequestMessage();
-            message.Headers.Add("Accept", "application/json");
-            message.RequestUri = new Uri(apiRequest.Url);
 
-            if(apiRequest.Data!=null)
-            {
-                message.Content = new StringContent(JsonConvert.SerializeObject(apiRequest.Data),
-                    Encoding.UTF8, "application/json");
+            if(apiRequest.ContentType==SD.ContentType.Json)
+            { 
+            message.Headers.Add("Accept", "application/json");
             }
+
+            else
+            {
+			message.Headers.Add("Accept", "*/*");
+			}
+
+			message.RequestUri = new Uri(apiRequest.Url);
+
+			if (apiRequest.ContentType == SD.ContentType.MultipartFormData)
+			{
+                var content = new MultipartFormDataContent();
+
+                foreach(var prop in apiRequest.Data.GetType().GetProperties())
+                {
+                    var value = prop.GetValue(apiRequest.Data);
+
+                    if(value is FormFile)
+                    {
+                        var file = (FormFile)value;
+                        if(file!=null)
+                        {
+                            content.Add(new StreamContent(file.OpenReadStream()), prop.Name, file.FileName);
+                        }
+                    }
+                    else
+                    {
+                        content.Add(new StringContent(value == null ? "" : value.ToString()), prop.Name);
+                    }
+                }
+                message.Content = content;
+			}
+
+            else
+            {
+				if (apiRequest.Data != null)
+				{
+					message.Content = new StringContent(JsonConvert.SerializeObject(apiRequest.Data),
+						Encoding.UTF8, "application/json");
+				}
+			}
+			
 
             switch (apiRequest.ApiType) 
             {
