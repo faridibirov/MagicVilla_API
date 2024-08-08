@@ -5,6 +5,7 @@ using Newtonsoft.Json;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
+using static MagicVilla_Utility.SD;
 
 namespace MagicVilla_Web.Services;
 
@@ -27,19 +28,19 @@ public class BaseService : IBaseService
             var client = httpClient.CreateClient("MagicAPI");
             HttpRequestMessage message = new HttpRequestMessage();
 
-            if(apiRequest.ContentType==SD.ContentType.Json)
-            { 
-            message.Headers.Add("Accept", "application/json");
-            }
+            if(apiRequest.ContentType==SD.ContentType.MultipartFormData)
+            {
+				message.Headers.Add("Accept", "*/*");
+			}
 
             else
             {
-			message.Headers.Add("Accept", "*/*");
+			message.Headers.Add("Accept", "application/json");
 			}
 
 			message.RequestUri = new Uri(apiRequest.Url);
 
-			if (apiRequest.ContentType == SD.ContentType.MultipartFormData)
+			if (apiRequest.ContentType == ContentType.MultipartFormData)
 			{
                 var content = new MultipartFormDataContent();
 
