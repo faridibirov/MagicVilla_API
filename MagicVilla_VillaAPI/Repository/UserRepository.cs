@@ -42,7 +42,7 @@ public class UserRepository : IUserRepository
 
     }
 
-    public async Task<LoginResponseDTO> Login(LoginRequestDTO loginRequestDTO)
+    public async Task<TokenDTO> Login(LoginRequestDTO loginRequestDTO)
     {
         var user = _db.ApplicationUsers.FirstOrDefault(u => u.UserName.ToLower() == loginRequestDTO.UserName.ToLower());
 
@@ -50,11 +50,9 @@ public class UserRepository : IUserRepository
 
         if (user == null || isValid==false)
         {
-            return new LoginResponseDTO()
+            return new TokenDTO()
             {
-                Token = "",
-                User = null
-            };
+				AccessToken = ""            };
         }
 
         //if user was found generate JWT token
@@ -75,13 +73,12 @@ public class UserRepository : IUserRepository
 
         var token = tokenHandler.CreateToken(tokenDescriptor);
 
-        LoginResponseDTO loginResponseDTO = new LoginResponseDTO()
+        TokenDTO tokenDTO = new TokenDTO()
         {
-            Token = tokenHandler.WriteToken(token),
-            User = _mapper.Map<UserDTO>(user)
+			AccessToken = tokenHandler.WriteToken(token)
         };
 
-        return loginResponseDTO;
+        return tokenDTO;
     }
 
     public async Task<UserDTO> Register(RegisterationRequestDTO registerationRequestDTO)

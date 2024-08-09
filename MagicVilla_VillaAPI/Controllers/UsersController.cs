@@ -24,9 +24,9 @@ public class UsersController : Controller
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginRequestDTO model)
     {
-        var loginResponse = await _userRepository.Login(model);
+        var tokenDTO = await _userRepository.Login(model);
 
-        if (loginResponse.User == null || string.IsNullOrEmpty(loginResponse.Token))
+        if (tokenDTO == null || string.IsNullOrEmpty(tokenDTO.AccessToken))
         {
             _response.StatusCode = HttpStatusCode.BadRequest;
             _response.IsSuccess = false;
@@ -37,7 +37,7 @@ public class UsersController : Controller
 
         _response.StatusCode = HttpStatusCode.OK;
         _response.IsSuccess = true;
-        _response.Result = loginResponse;
+        _response.Result = tokenDTO;
         return Ok(_response);
     }
 
