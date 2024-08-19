@@ -26,7 +26,7 @@ public class AuthService : IAuthService
             ApiType = SD.ApiType.POST,
             Data = obj,
             Url = villaUrl + "/api/v1/UsersAuth/login"
-		});
+		}, withBearer:false);
     }
 
     public async Task<T> RegisterAsync<T>(RegisterationRequestDTO obj)
@@ -36,6 +36,6 @@ public class AuthService : IAuthService
             ApiType = SD.ApiType.POST,
             Data = obj,
             Url = villaUrl + "/api/v1/UsersAuth/register"
-		});
+		}, withBearer:false);
     }
 }

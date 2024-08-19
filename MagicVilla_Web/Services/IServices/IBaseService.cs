@@ -6,5 +6,5 @@ public interface IBaseService
 {
 	APIResponse responseModel { get; set; }
 
-	Task<T> SendAsync<T>(APIRequest apiRequest);
+	Task<T> SendAsync<T>(APIRequest apiRequest, bool withBearer=true);
 }

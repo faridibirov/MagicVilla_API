@@ -41,6 +41,7 @@ public class TokenProvider : ITokenProvider
 
 	public void SetToken(TokenDTO tokenDTO)
 	{
-		_httpContextAccessor.HttpContext?.Response.Cookies.Append(SD.AccessToken, tokenDTO.AccessToken);
+		var cookieOptions = new CookieOptions { Expires = DateTime.UtcNow.AddDays(60) };
+		_httpContextAccessor.HttpContext?.Response.Cookies.Append(SD.AccessToken, tokenDTO.AccessToken, cookieOptions);
 	}
 }
