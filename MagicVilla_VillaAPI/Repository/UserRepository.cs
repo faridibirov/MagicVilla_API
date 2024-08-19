@@ -55,7 +55,8 @@ public class UserRepository : IUserRepository
 				AccessToken = ""            };
         }
 
-        var accessToken = await GetAccessToken(user);
+        var jwtTokenId = $"JTI{Guid.NewGuid()}";
+        var accessToken = await GetAccessToken(user, jwtTokenId);
 
 
 		TokenDTO tokenDTO = new TokenDTO()
@@ -106,7 +107,7 @@ public class UserRepository : IUserRepository
         return new UserDTO();
     }
 
-    private async Task<string> GetAccessToken(ApplicationUser user)
+    private async Task<string> GetAccessToken(ApplicationUser user, string jwtTokenId)
     {
 		//if user was found generate JWT token
 		var roles = await _userManager.GetRolesAsync(user);
@@ -118,7 +119,10 @@ public class UserRepository : IUserRepository
 			Subject = new ClaimsIdentity(new Claim[]
 			{
 				new Claim(ClaimTypes.Name, user.Name.ToString()),
-				new Claim(ClaimTypes.Role, roles.FirstOrDefault())
+				new Claim(ClaimTypes.Role, roles.FirstOrDefault()),
+                new Claim(JwtRegisteredClaimNames.Jti, jwtTokenId),
+                new Claim(JwtRegisteredClaimNames.Sub, user.Id),
+              
 			}),
 			Expires = DateTime.Now.AddDays(7),
 			SigningCredentials = new(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
@@ -129,4 +133,26 @@ public class UserRepository : IUserRepository
 
         return tokenStr;
 	}
+
+	public Task<TokenDTO> RefreshAccessToken(TokenDTO tokenDTO)
+	{
+		throw new NotImplementedException();
+	}
+
+    private (bool isSuccessful, string userId, string tokenId) GetAccessTokenData(string accessToken)
+    {
+        try
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var jwt = tokenHandler.ReadJwtToken(accessToken);
+            var jwtTokenId = jwt.Claims.FirstOrDefault(u=>u.Type== JwtRegisteredClaimNames.Jti).Value;
+            var userId = jwt.Claims.FirstOrDefault(u => u.Type == JwtRegisteredClaimNames.Sub).Value;
+
+            return (true, userId, jwtTokenId);
+        }
+        catch
+        {
+            return (false, null, null);
+        }
+    }
 }
