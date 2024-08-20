@@ -74,7 +74,7 @@ public class UsersController : Controller
 
     }
 
-	[HttpPost("register")]
+	[HttpPost("refresh")]
 	public async Task<IActionResult> GetNewTokenFromRefreshToken([FromBody] TokenDTO tokenDTO)
 	{
         if (ModelState.IsValid)
@@ -91,7 +91,7 @@ public class UsersController : Controller
 
             _response.StatusCode = HttpStatusCode.OK;
             _response.IsSuccess = true;
-            _response.Result = tokenDTO;
+            _response.Result = tokenDTOResponse;
 
             return Ok(_response);
 		}

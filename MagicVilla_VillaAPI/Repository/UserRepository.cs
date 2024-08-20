@@ -4,6 +4,7 @@ using MagicVilla_VillaAPI.Models;
 using MagicVilla_VillaAPI.Models.Dto;
 using MagicVilla_VillaAPI.Repository.IRepository;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -57,11 +58,12 @@ public class UserRepository : IUserRepository
 
         var jwtTokenId = $"JTI{Guid.NewGuid()}";
         var accessToken = await GetAccessToken(user, jwtTokenId);
-
+        var refreshToken = await CreateNewRefreshToken(user.Id, jwtTokenId);
 
 		TokenDTO tokenDTO = new TokenDTO()
         {
-			AccessToken = accessToken
+			AccessToken = accessToken,
+            RefreshToken = refreshToken
 		};
 
         return tokenDTO;
@@ -124,7 +126,7 @@ public class UserRepository : IUserRepository
                 new Claim(JwtRegisteredClaimNames.Sub, user.Id),
               
 			}),
-			Expires = DateTime.Now.AddDays(7),
+			Expires = DateTime.Now.AddMinutes(1),
 			SigningCredentials = new(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
 		};
 
@@ -134,10 +136,77 @@ public class UserRepository : IUserRepository
         return tokenStr;
 	}
 
-	public Task<TokenDTO> RefreshAccessToken(TokenDTO tokenDTO)
+	public async Task<TokenDTO> RefreshAccessToken(TokenDTO tokenDTO)
 	{
-		throw new NotImplementedException();
+		// Find an existing refresh token
+
+        var existingRefreshToken = await _db.RefreshTokens.FirstOrDefaultAsync(u=>u.Refresh_Token == tokenDTO.RefreshToken);
+
+        if (existingRefreshToken == null) 
+        {
+            return new TokenDTO();
+        }
+
+        // Compare data from existing refresh and access token provided and if there is any missmath then consider it as a fraud
+        var accessTokenData = GetAccessTokenData(tokenDTO.AccessToken);
+
+        if (!accessTokenData.isSuccessful || accessTokenData.userId!=existingRefreshToken.UserId
+            ||accessTokenData.tokenId !=existingRefreshToken.JwtTokenId)
+            
+        {
+            existingRefreshToken.IsValid = false;
+            _db.SaveChanges();
+			return new TokenDTO();
+
+		}
+
+		// When someone tries to use not valid refresh token, fraud possible
+
+		// If just expired then mark as invalid and return empty
+		if (existingRefreshToken.ExpiresAt<DateTime.UtcNow)
+        {
+			existingRefreshToken.IsValid = false;
+			_db.SaveChanges();
+            return new TokenDTO();
+		}
+
+        // replace old refresh with a new one with updated expire date
+        var newRefreshToken = await CreateNewRefreshToken(existingRefreshToken.UserId, existingRefreshToken.JwtTokenId);
+
+		// revoke existing refresh token
+		existingRefreshToken.IsValid = false;
+		_db.SaveChanges();
+
+        // generate new access token
+        var applicationUser = _db.ApplicationUsers.FirstOrDefault(u => u.Id == existingRefreshToken.UserId);
+        if (applicationUser == null)
+        {
+            return new TokenDTO();
+        }
+
+        var newAccessToken = await GetAccessToken(applicationUser, existingRefreshToken.JwtTokenId);
+
+        return new TokenDTO()
+        {
+            AccessToken = newAccessToken,
+            RefreshToken = newRefreshToken,
+        };
 	}
+
+    private async Task<string> CreateNewRefreshToken(string userId, string tokenId)
+    {
+        RefreshToken refreshToken = new RefreshToken()
+        {
+            IsValid = true,
+            UserId = userId,
+            JwtTokenId = tokenId,
+            ExpiresAt = DateTime.UtcNow.AddMinutes(3),
+            Refresh_Token = Guid.NewGuid() + "-" + Guid.NewGuid(),
+        };
+        await _db.RefreshTokens.AddAsync(refreshToken);
+        await _db.SaveChangesAsync();
+        return refreshToken.Refresh_Token;
+    }
 
     private (bool isSuccessful, string userId, string tokenId) GetAccessTokenData(string accessToken)
     {
