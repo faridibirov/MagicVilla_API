@@ -9,6 +9,7 @@ using Newtonsoft.Json;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Net.Http.Headers;
+using System.Runtime.CompilerServices;
 using System.Security.Claims;
 using System.Text;
 using static MagicVilla_Utility.SD;
@@ -19,18 +20,20 @@ public class BaseService : IBaseService
 {
 	public APIResponse responseModel { get ; set ; }
     private readonly ITokenProvider _tokenProvider;
+	private readonly IApiMessageRequestBuilder _apiMessageRequestBuilder;
     public IHttpClientFactory httpClient { get; set; }
 
 	protected readonly string VillaApiUrl;
 	private IHttpContextAccessor _httpContextAccessor;
     public BaseService(IHttpClientFactory httpClient, ITokenProvider tokenProvider, IConfiguration configuration
-		,IHttpContextAccessor httpContextAccessor)
+		,IHttpContextAccessor httpContextAccessor, IApiMessageRequestBuilder apiMessageRequestBuilder)
     {
         this.responseModel = new();
         this.httpClient = httpClient;
         _tokenProvider = tokenProvider;
 		VillaApiUrl = configuration.GetValue<string>("ServiceUrls:VillaAPI");
 		_httpContextAccessor = httpContextAccessor;
+		_apiMessageRequestBuilder = apiMessageRequestBuilder;
 
 	}
 
@@ -42,108 +45,62 @@ public class BaseService : IBaseService
 
 			var messageFactory = () =>
 			{
-				HttpRequestMessage message = new();
-
-				if (apiRequest.ContentType == SD.ContentType.MultipartFormData)
-				{
-					message.Headers.Add("Accept", "*/*");
-				}
-
-				else
-				{
-					message.Headers.Add("Accept", "application/json");
-				}
-
-				message.RequestUri = new Uri(apiRequest.Url);
-
-				if (apiRequest.ContentType == ContentType.MultipartFormData)
-				{
-					var content = new MultipartFormDataContent();
-
-					foreach (var prop in apiRequest.Data.GetType().GetProperties())
-					{
-						var value = prop.GetValue(apiRequest.Data);
-
-						if (value is FormFile)
-						{
-							var file = (FormFile)value;
-							if (file != null)
-							{
-								content.Add(new StreamContent(file.OpenReadStream()), prop.Name, file.FileName);
-							}
-						}
-						else
-						{
-							content.Add(new StringContent(value == null ? "" : value.ToString()), prop.Name);
-						}
-					}
-					message.Content = content;
-				}
-
-				else
-				{
-					if (apiRequest.Data != null)
-					{
-						message.Content = new StringContent(JsonConvert.SerializeObject(apiRequest.Data),
-							Encoding.UTF8, "application/json");
-					}
-				}
-
-
-				switch (apiRequest.ApiType)
-				{
-					case SD.ApiType.POST:
-						message.Method = HttpMethod.Post;
-						break;
-					case SD.ApiType.DELETE:
-						message.Method = HttpMethod.Delete;
-						break;
-
-					case SD.ApiType.PUT:
-						message.Method = HttpMethod.Put;
-						break;
-
-					default:
-						message.Method = HttpMethod.Get;
-						break;
-
-				}
-
-				return message;
+				return _apiMessageRequestBuilder.Build(apiRequest);
 			};
 
-            HttpResponseMessage apiResponse = null;
+            HttpResponseMessage httpResponseMessage = null;
 
-           
 
-            apiResponse = await SendWithRefreshTokenAsync(client, messageFactory, withBearer);
 
-            var apiContent = await apiResponse.Content.ReadAsStringAsync();
+			httpResponseMessage = await SendWithRefreshTokenAsync(client, messageFactory, withBearer);
+
+			APIResponse FinalApiResonse = new()
+			{
+				IsSuccess = false
+			};
+
 
             try
             {
-                APIResponse ApiResponse = JsonConvert.DeserializeObject<APIResponse>(apiContent);
+				switch(httpResponseMessage.StatusCode)
+				{
+					case HttpStatusCode.NotFound:
+						FinalApiResonse.ErrorMessages = new List<string>() { "Not Found" };
+						break;
+					case HttpStatusCode.Forbidden:
+						FinalApiResonse.ErrorMessages = new List<string>() { "Access Denied" };
+						break;
+					case HttpStatusCode.Unauthorized:
+						FinalApiResonse.ErrorMessages = new List<string>() { "Unathorized" };
+						break;
+					case HttpStatusCode.InternalServerError:
+						FinalApiResonse.ErrorMessages = new List<string>() { "Internal Server Error" };
+						break;
+					default:
+						var apiContent = await httpResponseMessage.Content.ReadAsStringAsync();
+						FinalApiResonse.IsSuccess = true;
+						FinalApiResonse = JsonConvert.DeserializeObject<APIResponse>(apiContent);
+						break;
 
-                if(ApiResponse!=null &&(apiResponse.StatusCode==HttpStatusCode.BadRequest || apiResponse.StatusCode == HttpStatusCode.NotFound))
-                {
-					ApiResponse.StatusCode = HttpStatusCode.BadRequest;
-					ApiResponse.IsSuccess = false;
-
-					var res = JsonConvert.SerializeObject(ApiResponse);
-					var returnObj = JsonConvert.DeserializeObject<T>(res);
-					return returnObj;
 				}
+
+				
             }
 
             catch (Exception e)
             {
-			    var exceptionResponse = JsonConvert.DeserializeObject<T>(apiContent);
-			    return exceptionResponse;
+				FinalApiResonse.ErrorMessages = new List<string> { "Error Encountered", e.Message.ToString() };
 			}
+			var res = JsonConvert.SerializeObject(FinalApiResonse);
+			var returnObj = JsonConvert.DeserializeObject<T>(res);
+			return returnObj;
 
-			var APIResponse = JsonConvert.DeserializeObject<T>(apiContent);
-			return APIResponse;
+		}
 
+
+		catch(AuthException)
+		{
+			throw;
 		}
         catch (Exception ex)
         {
@@ -194,7 +151,10 @@ public class BaseService : IBaseService
 				return response;
 
 			}
-
+			catch (AuthException )
+			{
+				throw;
+			}
 			catch (HttpRequestException httpRequestException)
 			{
 				if (httpRequestException.StatusCode == HttpStatusCode.Unauthorized)
@@ -232,6 +192,7 @@ public class BaseService : IBaseService
 		{
 			await _httpContextAccessor.HttpContext.SignOutAsync();
 			_tokenProvider.ClearToken();
+			throw new AuthException();
 		}
 
 		else

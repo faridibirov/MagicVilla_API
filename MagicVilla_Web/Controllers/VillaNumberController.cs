@@ -74,10 +74,8 @@ public class VillaNumberController : Controller
 
 			else
 			{
-				if(response.ErrorMessages.Count>0)
-				{
-					ModelState.AddModelError("ErrorMessages", response.ErrorMessages.FirstOrDefault());
-				}
+				TempData["error"] = (response.ErrorMessages != null && response.ErrorMessages.Count > 0) ?
+					response.ErrorMessages[0] : "Error Encountered";
 			}
 		}
 
@@ -120,7 +118,11 @@ public class VillaNumberController : Controller
 
 			return View(villaNumberUpdateVM);
 		}
-
+		else
+		{
+			TempData["error"] = (response.ErrorMessages != null && response.ErrorMessages.Count > 0) ?
+				response.ErrorMessages[0] : "Error Encountered";
+		}
 		return NotFound();
 	}
 
@@ -138,10 +140,8 @@ public class VillaNumberController : Controller
 			}
 			else
 			{
-				if (response.ErrorMessages.Count > 0)
-				{
-					ModelState.AddModelError("ErrorMessages", response.ErrorMessages.FirstOrDefault());
-				}
+				TempData["error"] = (response.ErrorMessages != null && response.ErrorMessages.Count > 0) ?
+					response.ErrorMessages[0] : "Error Encountered";
 			}
 		}
 
@@ -197,6 +197,12 @@ public class VillaNumberController : Controller
 		if (response != null && response.IsSuccess)
 		{
 			return RedirectToAction(nameof(IndexVillaNumber));
+		}
+
+		else
+		{
+			TempData["error"] = (response.ErrorMessages != null && response.ErrorMessages.Count > 0) ?
+				response.ErrorMessages[0] : "Error Encountered";
 		}
 
 		return View(model);
