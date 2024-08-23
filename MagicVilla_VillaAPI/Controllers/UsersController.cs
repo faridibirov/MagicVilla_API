@@ -20,8 +20,14 @@ public class UsersController : Controller
         _response = new();
     }
 
+    [HttpGet("Error")]
+	public async Task<IActionResult> Error()
+    {
+        throw new FileNotFoundException();
+    }
 
-    [HttpPost("login")]
+
+	[HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginRequestDTO model)
     {
         var tokenDTO = await _userRepository.Login(model);
