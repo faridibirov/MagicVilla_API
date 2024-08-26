@@ -26,6 +26,12 @@ public class UsersController : Controller
         throw new FileNotFoundException();
     }
 
+	[HttpGet("ImageError")]
+	public async Task<IActionResult> ImageError()
+	{
+		throw new BadImageFormatException("Fake Image Exception");
+	}
+
 
 	[HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginRequestDTO model)
